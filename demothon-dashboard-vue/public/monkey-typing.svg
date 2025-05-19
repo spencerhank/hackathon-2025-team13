@@ -1,0 +1,98 @@
+<svg viewBox="0 0 800 600" xmlns="http://www.w3.org/2000/svg">
+  <!-- Computer monitor -->
+  <rect x="300" y="150" width="250" height="180" rx="10" fill="#333" />
+  <rect x="310" y="160" width="230" height="150" rx="5" fill="#76b9ed" />
+  <rect x="350" y="330" width="150" height="20" fill="#555" />
+  <rect x="320" y="350" width="210" height="10" rx="2" fill="#444" />
+  
+  <!-- Keyboard -->
+  <rect x="280" y="370" width="290" height="80" rx="5" fill="#ddd" />
+  <rect x="290" y="380" width="270" height="60" rx="3" fill="#bbb" />
+  
+  <!-- Keyboard keys -->
+  <g fill="#eee">
+    <rect x="300" y="390" width="20" height="15" rx="2" />
+    <rect x="325" y="390" width="20" height="15" rx="2" />
+    <rect x="350" y="390" width="20" height="15" rx="2" />
+    <rect x="375" y="390" width="20" height="15" rx="2" />
+    <rect x="400" y="390" width="20" height="15" rx="2" />
+    <rect x="425" y="390" width="20" height="15" rx="2" />
+    <rect x="450" y="390" width="20" height="15" rx="2" />
+    <rect x="475" y="390" width="20" height="15" rx="2" />
+    <rect x="500" y="390" width="20" height="15" rx="2" />
+    <rect x="525" y="390" width="20" height="15" rx="2" />
+    
+    <rect x="310" y="410" width="20" height="15" rx="2" />
+    <rect x="335" y="410" width="20" height="15" rx="2" />
+    <rect x="360" y="410" width="20" height="15" rx="2" />
+    <rect x="385" y="410" width="20" height="15" rx="2" />
+    <rect x="410" y="410" width="20" height="15" rx="2" />
+    <rect x="435" y="410" width="20" height="15" rx="2" />
+    <rect x="460" y="410" width="20" height="15" rx="2" />
+    <rect x="485" y="410" width="20" height="15" rx="2" />
+    <rect x="510" y="410" width="20" height="15" rx="2" />
+    
+    <rect x="320" y="430" width="20" height="15" rx="2" />
+    <rect x="345" y="430" width="20" height="15" rx="2" />
+    <rect x="370" y="430" width="20" height="15" rx="2" />
+    <rect x="395" y="430" width="100" height="15" rx="2" />
+    <rect x="500" y="430" width="20" height="15" rx="2" />
+  </g>
+  
+  <!-- Desk -->
+  <rect x="200" y="450" width="450" height="20" fill="#8B4513" />
+  <rect x="220" y="470" width="30" height="100" fill="#8B4513" />
+  <rect x="600" y="470" width="30" height="100" fill="#8B4513" />
+  
+  <!-- Monkey's body -->
+  <ellipse cx="425" cy="320" rx="110" ry="95" fill="#8B4513" />
+  
+  <!-- Monkey's head -->
+  <circle cx="425" cy="220" r="70" fill="#8B4513" />
+  <ellipse cx="425" cy="195" rx="60" ry="50" fill="#D2691E" />
+  
+  <!-- Monkey's eyes -->
+  <circle cx="400" cy="205" r="12" fill="white" />
+  <circle cx="450" cy="205" r="12" fill="white" />
+  <circle cx="400" cy="205" r="6" fill="black" />
+  <circle cx="450" cy="205" r="6" fill="black" />
+  <circle cx="402" cy="202" r="3" fill="white" />
+  <circle cx="452" cy="202" r="3" fill="white" />
+  
+  <!-- Monkey's nose -->
+  <ellipse cx="425" cy="225" rx="15" ry="10" fill="#333" />
+  
+  <!-- Monkey's mouth -->
+  <path d="M405 240 Q425 255, 445 240" stroke="#333" stroke-width="3" fill="none" />
+  
+  <!-- Monkey's ears -->
+  <circle cx="370" cy="180" r="20" fill="#8B4513" />
+  <circle cx="480" cy="180" r="20" fill="#8B4513" />
+  <circle cx="370" cy="180" r="10" fill="#D2691E" />
+  <circle cx="480" cy="180" r="10" fill="#D2691E" />
+  
+  <!-- Monkey's arms & hands -->
+  <path d="M350 300 Q320 340, 330 380" stroke="#8B4513" stroke-width="25" fill="none" />
+  <path d="M500 300 Q530 340, 520 380" stroke="#8B4513" stroke-width="25" fill="none" />
+  <circle cx="330" cy="380" r="15" fill="#D2691E" />
+  <circle cx="520" cy="380" r="15" fill="#D2691E" />
+  
+  <!-- Typing fingers -->
+  <circle cx="370" cy="390" r="5" fill="#D2691E" />
+  <circle cx="425" cy="405" r="5" fill="#D2691E" />
+  <circle cx="480" cy="390" r="5" fill="#D2691E" />
+  
+  <!-- Monkey's tail -->
+  <path d="M350 350 Q300 380, 310 440 Q320 480, 290 500" stroke="#8B4513" stroke-width="15" fill="none" />
+  
+  <!-- Screen content -->
+  <g font-family="monospace" font-size="14" fill="white">
+    <text x="320" y="180">function banana() {</text>
+    <text x="320" y="200">  if (hungry) {</text>
+    <text x="320" y="220">    eatBanana();</text>
+    <text x="320" y="240">  } else {</text>
+    <text x="320" y="260">    saveBananaForLater();</text>
+    <text x="320" y="280">  }</text>
+    <text x="320" y="300">}</text>
+  </g>
+</svg>

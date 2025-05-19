@@ -1,0 +1,209 @@
+# This will create a flow like this:
+#    Solace -> OpenAI -> Solace
+#
+# It will subscribe to `demo/question` and expect an event with the payload:
+#
+# The input message has the following schema:
+# {
+#   "text": "<question or request as text>"
+# }
+#
+# It will then send an event back to Solace with the topic: `demo/question/response`
+#
+# Dependencies:
+# pip install -U langchain_openai openai langchain-core~=0.3.0 langchain~=0.3.0
+#
+# required ENV variables:
+# - OPENAI_API_KEY
+# - OPENAI_API_ENDPOINT
+# - OPENAI_MODEL_NAME
+# - SOLACE_BROKER_URL
+# - SOLACE_BROKER_USERNAME
+# - SOLACE_BROKER_PASSWORD
+# - SOLACE_BROKER_VPN
+
+---
+log:
+  stdout_log_level: DEBUG
+  log_file_level: DEBUG
+  log_file: solace_ai_connector.log
+
+shared_config:
+  - broker_config: &broker_connection
+      broker_type: solace
+      broker_url: ${SOLACE_BROKER_URL}
+      broker_username: ${SOLACE_BROKER_USERNAME}
+      broker_password: ${SOLACE_BROKER_PASSWORD}
+      broker_vpn: ${SOLACE_BROKER_VPN}
+
+# Take from input broker and publish back to Solace
+flows:
+  - name: qdrant_ingest
+    # Input from a Solace broker
+    components:
+      - component_name: solace_sw_broker
+        component_module: broker_input
+        component_config:
+          <<: *broker_connection
+          broker_queue_name: AcmeRetail_Retail360_Ingest_Self_Managed
+          broker_subscriptions:
+            - topic: acmeRetail/storeOps/>
+              qos: 1
+            - topic: acmeretail/mdm/>
+              qos: 1
+          payload_encoding: utf-8
+          payload_format: json
+
+      - component_name: stdout_output
+        component_module: stdout_output
+        input_transforms:
+          - type: copy
+            source_expression: input.topic
+            dest_expression: user_data.incoming_solace_topic
+          - type: copy
+            source_expression: input.payload
+            dest_expression: user_data.incoming_solace_payload
+        input_selection:
+          source_expression: user_data.incoming_solace_topic
+            # embed data and ingest into Quadrant
+      - component_name: quadrant_embed
+        component_module: langchain_vector_store_embedding_index
+        component_config:
+          vector_store_component_path: langchain_qdrant
+          vector_store_component_name: QdrantVectorStore
+          vector_store_component_config:
+            url: ${QDRANT_URL}
+            api_key: ${QDRANT_API_KEY}
+            collection_name: ${QDRANT_COLLECTION_NAME}
+          embedding_component_path: langchain_openai
+          embedding_component_name: OpenAIEmbeddings
+          embedding_component_config:
+            api_key: ${OPENAI_API_KEY}
+            base_url: ${OPENAI_ENDPOINT_NAME}
+            model: ${OPENAI_EMBEDDING_MODEL_NAME}
+        input_transforms:
+          - type: copy
+            source_expression: user_data.incoming_solace_topic
+            dest_expression: user_data.vector_input:metadatas.source
+          - type: copy
+            source_expression: template:{{json://user_data.incoming_solace_payload}} {{text://user_data.incoming_solace_topic}}
+            dest_expression: user_data.vector_input:texts
+        input_selection:
+          source_expression: user_data.vector_input
+  # broker input processing
+  - name: Qdrant RAG
+    components:
+      # Input from a Solace broker
+      - component_name: solace_sw_broker
+        component_module: broker_input
+        component_config:
+          <<: *broker_connection
+          broker_queue_name: AcmeRetail_Retail360_RAGInsights 
+          broker_subscriptions:
+            - topic: acmeRetail/retailInsights/rag/inquiry
+              qos: 1
+          payload_encoding: utf-8
+          payload_format: json
+      
+      # - component_name: stdout_output
+      #   component_module: stdout_output
+      #   input_transforms:
+      #     - type: copy
+      #       source_expression: previous
+      #       dest_expression: user_data.output:payload
+      #   input_selection:
+      #     source_expression: input   
+    
+
+      - component_name: qrdant_search
+        component_module: langchain_vector_store_embedding_search
+        component_config:
+          vector_store_component_path: langchain_qdrant
+          vector_store_component_name: QdrantVectorStore
+          vector_store_component_config:
+            url: ${QDRANT_URL}
+            collection_name: ${QDRANT_COLLECTION_NAME}
+            api_key: ${QDRANT_API_KEY}
+          embedding_component_path: langchain_openai
+          embedding_component_name: OpenAIEmbeddings
+          embedding_component_config:
+            api_key: ${OPENAI_API_KEY}
+            base_url: ${OPENAI_ENDPOINT_NAME}
+            model: ${OPENAI_EMBEDDING_MODEL_NAME}
+          max_results: 20
+        input_transforms:
+          - type: copy
+            source_expression: input.payload:query
+            dest_expression: user_data.vector_input:text
+        input_selection:
+          source_expression:  user_data.vector_input
+
+      - component_name: stdout_output2
+        component_module: stdout_output
+        input_transforms:
+          - type: copy
+            source_expression: previous:result
+            dest_expression: user_data.retrieved_data
+          - type: copy
+            source_expression: |
+              template: test
+              {{text://user_data.retrieved_data}}
+              {{text://input.payload}}
+            dest_expression: user_data.llm_input:messages.0.content
+          - type: copy
+            source_expression: static:user
+            dest_expression: user_data.llm_input:messages.0.role
+
+        input_selection:
+          source_expression: user_data.retrieved_data
+      
+      # Do an LLM request
+      
+      - component_name: llm_request
+        component_module: openai_chat_model
+        component_config:
+          api_key: ${OPENAI_API_KEY}
+          base_url: ${OPENAI_ENDPOINT_NAME}
+          model: ${OPENAI_MODEL_NAME}
+          temperature: 0.01
+          input_transforms:
+        # Extract and format the retrieved data
+            - type: copy
+              source_expression: previous:result
+              dest_expression: user_data.retrieved_data
+
+            - type: copy
+              source_expression: |
+                template:You are a helpful AI assistant helping to answer questions for a RetailInsights 360 Application. Your users are regional managers for retail logistics and store operations. The topic taxonomy for the event topics is acmeRetail/storeOps/retailOrder/{retailorderVerb}/v1/{storeLocation}/{customerId}/{orderId} Using the provided <context>, help with the user's request below. Refrain from using any knowledge outside of the provided context. If the user query cannot be answered using the provided context or the context is None or null, produce a notification that the context is insufficient and do not generate any response.
+
+                <context>
+                {{text://user_data.retrieved_data}}
+                </context>
+                
+                <user-question>
+                {{text://input.payload}}
+                </user-question>
+              dest_expression: user_data.llm_input:messages.0.content
+            - type: copy
+              source_expression: static:user
+              dest_expression: user_data.llm_input:messages.0.role
+        input_selection:
+            source_expression: user_data.llm_input
+      
+
+      # Send response back to broker
+      - component_name: send_response
+        component_module: broker_output
+        component_config:
+          <<: *broker_connection
+          payload_encoding: utf-8
+          payload_format: json
+        input_transforms:
+          - type: copy
+            source_expression: previous
+            dest_expression: user_data.output:payload
+          - type: copy
+            source_expression: input.user_properties:aiConnectorReplyTo
+            dest_expression: user_data.output:topic
+        input_selection:
+          source_expression: user_data.output
