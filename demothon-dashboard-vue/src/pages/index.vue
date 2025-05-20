@@ -10,7 +10,7 @@
     <div class="hero-banner-content">
       <div class="text-h4 font-weight-light mb-n1">Welcome to the</div>
 
-      <h1 class="text-h2 font-weight-bold">Retail 360 Insights Dashboard</h1>
+      <h1 class="text-h2 font-weight-bold">Retail 360 Dashboard</h1>
     </div>
   </div>
   <div class="bg-surface-0 dark:bg-surface-900">

@@ -105,6 +105,7 @@
                     chartTitle="Price Update Metrics"
                     chartColor="#13B39C"
                     chartLabel="Price Updates"
+                    :chartData="mdmTrackerStore.priceMdmUpdates"
                   />
                 </v-col>
                 <v-col cols="6" class="pa-5">
@@ -113,6 +114,7 @@
                     chartTitle="Product Update Metrics"
                     chartColor="#066177"
                     chartLabel="Product Updates"
+                    :chartData="mdmTrackerStore.productMdmUpdates"
                   />
                 </v-col>
               </v-row>

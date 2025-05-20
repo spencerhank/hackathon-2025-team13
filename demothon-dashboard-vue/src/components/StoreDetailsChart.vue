@@ -30,6 +30,7 @@ const props = defineProps({
   chartTitle: String,
   chartColor: String,
   chartLabel: String,
+  chartData: Object,
 });
 
 const chartOptions = {
@@ -43,9 +44,23 @@ const chartData = computed(() => {
       {
         label: props.chartLabel,
         backgroundColor: props.chartColor,
-        data: [200, 50],
+        data: [getChartDataForStore("101"), getChartDataForStore("102")],
       },
     ],
   };
 });
+
+function getChartDataForStore(storeId) {
+  if (props.chartData.length == 0) {
+    return 0;
+  } else {
+    return props.chartData.filter((dataPoint) => {
+      let topicArray = dataPoint.getDestination().getName().split("/");
+      if (topicArray[4] === storeId) {
+        // console.log(topicArray[4]);
+        return true;
+      }
+    }).length;
+  }
+}
 </script>

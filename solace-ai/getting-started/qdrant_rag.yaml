@@ -45,7 +45,7 @@ flows:
         component_module: broker_input
         component_config:
           <<: *broker_connection
-          broker_queue_name: AcmeRetail_Retail360_Ingest_Self_Managed
+          broker_queue_name: AcmeRetail_Retail360_Ingest
           broker_subscriptions:
             - topic: acmeRetail/storeOps/>
               qos: 1
@@ -174,7 +174,7 @@ flows:
 
             - type: copy
               source_expression: |
-                template:You are a helpful AI assistant helping to answer questions for a RetailInsights 360 Application. Your users are regional managers for retail logistics and store operations. The topic taxonomy for the event topics is acmeRetail/storeOps/retailOrder/{retailorderVerb}/v1/{storeLocation}/{customerId}/{orderId} Using the provided <context>, help with the user's request below. Refrain from using any knowledge outside of the provided context. If the user query cannot be answered using the provided context or the context is None or null, produce a notification that the context is insufficient and do not generate any response.
+                template:You are a helpful AI assistant helping to answer questions for a RetailInsights 360 Application. Your users are regional managers for retail logistics and store operations. The topic taxonomy for point of sale events is acmeRetail/storeOps/retailOrder/{retailorderVerb}/v1/{storeLocation}/{customerId}/{orderId}. the topic taxonomy for product mdm updates is acmeretail/mdm/product/{trigger}/{storeId}/{productType}/{productNr} and price mdm updates is acmeretail/mdm/price/{trigger}/{storeId}/{productType}/{productNr}. Using the provided <context>, help with the user's request below. Refrain from using any knowledge outside of the provided context. If the user query cannot be answered using the provided context or the context is None or null, produce a notification that the context is insufficient and do not generate any response.
 
                 <context>
                 {{text://user_data.retrieved_data}}
