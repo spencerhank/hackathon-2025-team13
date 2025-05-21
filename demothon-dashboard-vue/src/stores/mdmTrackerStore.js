@@ -6,6 +6,8 @@ export const useMdmTrackerStore = defineStore('mdmTrackerStore', () => {
     const solaceStore = useSolaceStore();
 
     const mdmUpdates = ref([]);
+    const mdmReceiverUp = ref(false);
+    let mdmConsumer = null
 
     const priceMdmUpdates = computed(() => {
         return mdmUpdates.value.filter((mdmUpdate) => {
@@ -21,14 +23,29 @@ export const useMdmTrackerStore = defineStore('mdmTrackerStore', () => {
 
     async function receiveMdmUpdates() {
         return new Promise((resolve, reject) => {
-            solaceStore.createConsumer(
-                "Retail360MdMTracker",
-                "acmeretail/mdm/>",
-                mdmHandlerCb
-            ).then(() => {
-                resolve()
+            solaceStore.connect().then(() => {
+                if (mdmReceiverUp.value) {
+                    resolve()
+                } else {
+                    solaceStore.createConsumer(
+                        "Retail360MdMTracker",
+                        "acmeretail/mdm/>",
+                        mdmHandlerCb
+                    ).then((consumer) => {
+                        mdmReceiverUp.value = !mdmReceiverUp.value
+                        mdmConsumer = consumer
+                        resolve()
+                    })
+                }
             })
+
         })
+    }
+
+    function disconnect() {
+        mdmReceiverUp.value = !mdmReceiverUp.value
+        mdmConsumer.dispose()
+        solaceStore.disconnect()
     }
 
     function mdmHandlerCb(message) {
@@ -40,6 +57,7 @@ export const useMdmTrackerStore = defineStore('mdmTrackerStore', () => {
         receiveMdmUpdates,
         priceMdmUpdates,
         productMdmUpdates,
+        disconnect,
         mdmUpdates
     }
 })

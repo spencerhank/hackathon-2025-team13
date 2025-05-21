@@ -1,6 +1,6 @@
 import { ref } from 'vue';
 import { defineStore } from 'pinia'
-import solace, { MessageDeliveryModeType, QueueDescriptor } from 'solclientjs'
+import solace, { MessageDeliveryModeType, QueueDescriptor, ReplayStartLocation } from 'solclientjs'
 
 export const useSolaceStore = defineStore('solaceStore', () => {
 
@@ -11,6 +11,8 @@ export const useSolaceStore = defineStore('solaceStore', () => {
 
   const solaceClient = {};
   solaceClient.session = null;
+
+  solaceClient.provisionedQueues = [];
 
   const brokerConfig = {};
   brokerConfig['url'] = import.meta.env.VITE_SOLACE_URL;
@@ -23,6 +25,7 @@ export const useSolaceStore = defineStore('solaceStore', () => {
       if (solaceClient.session !== null) {
         console.log('Solace session already created')
         resolve()
+        return
       }
 
       try {
@@ -92,7 +95,7 @@ export const useSolaceStore = defineStore('solaceStore', () => {
   }
 
   function disconnect() {
-    if (solaceClient.session != null) {
+    if (solaceClient.session !== null) {
       solaceClient.session.disconnect();
     }
   }
@@ -145,6 +148,7 @@ export const useSolaceStore = defineStore('solaceStore', () => {
       });
 
       replyMessageConsumer.on(solace.MessageConsumerEventName.UP, function () {
+        console.log('Consume Up')
         resolve(replyMessageConsumer.getDestination())
       })
 
@@ -163,28 +167,68 @@ export const useSolaceStore = defineStore('solaceStore', () => {
     return new Promise((resolve, reject) => {
       if (solaceClient.session == null) {
         reject('No Solace client session');
+        return
       }
 
-      const tempMessageConsumer = solaceClient.session.createMessageConsumer({
-        queueDescriptor: { name: queueName, type: solace.QueueType.QUEUE, durable: true },
-        acknowledeMode: solace.MessageConsumerAcknowledgeMode.CLIENT,
-        createIfMissing: true
-      })
+      const tempQueueName = 'tempReplay/' + queueName + '/' + solaceClient.session.getSessionProperties()['clientName']
 
-      tempMessageConsumer.on(solace.MessageConsumerEventName.UP, function () {
+      if (solaceClient.provisionedQueues.includes(tempQueueName)) {
+        resolve()
+        return
+      }
+
+      solaceClient.session.provisionEndpoint(
+        { name: tempQueueName, type: solace.QueueType.QUEUE, durable: true },
+        null,
+        true,
+        tempQueueName
+      )
+
+      solaceClient.session.on(solace.SessionEventCode.PROVISION_OK, function (details) {
+        if (details.queueDescriptor.getName() !== tempQueueName) {
+          return
+        }
+
+        const tempMessageConsumer = solaceClient.session.createMessageConsumer({
+          queueDescriptor: { name: tempQueueName, type: solace.QueueType.QUEUE, durable: true },
+          replayStartLocation: solace.SolclientFactory.createReplayStartLocationBeginning(),
+          acknowledeMode: solace.MessageConsumerAcknowledgeMode.CLIENT,
+          createIfMissing: true
+        })
+
+        tempMessageConsumer.on(solace.MessageConsumerEventName.UP, function () {
+          console.log('Consumer Up');
+          solaceClient.provisionedQueues.push(tempQueueName)
+          resolve(tempMessageConsumer)
+        })
+
+        tempMessageConsumer.on(solace.MessageConsumerEventName.SUBSCRIPTION_OK, function () {
+          console.log('Subscription Added')
+          tempMessageConsumer.connect()
+          // resolve(tempMessageConsumer)
+        })
+
+        tempMessageConsumer.on(solace.MessageConsumerEventName.MESSAGE, function (message) {
+          // console.log('Received Message on  ' + tempMessageConsumer.getDestination());
+          messageCb(message)
+        })
+
+        tempMessageConsumer.on(solace.MessageConsumerEventName.SUBSCRIPTION_ERROR, function (details) {
+          console.log('Received "SUBSCRIPTION_ERROR" event - details: ' + details);
+        })
+
+        tempMessageConsumer.on(solace.MessageConsumerEventName.DOWN_ERROR, function (details) {
+          console.log('Received "DOWN_ERROR" event - details: ' + details);
+        })
         tempMessageConsumer.addSubscription(solace.SolclientFactory.createTopicDestination(topicSubscription))
+
       })
 
-      tempMessageConsumer.on(solace.MessageConsumerEventName.SUBSCRIPTION_OK, function () {
-        resolve(tempMessageConsumer.getDestination())
-      })
 
-      tempMessageConsumer.on(solace.MessageConsumerEventName.MESSAGE, function (message) {
-        console.log('Received Message on  ' + tempMessageConsumer.getDestination());
-        messageCb(message)
-      })
 
-      tempMessageConsumer.connect()
+
+
+
     })
   }
 

@@ -129,19 +129,24 @@
 
 <script setup>
 const links = ["Retail 360 Dashboard"];
-import { onUnmounted } from "vue";
+import { onBeforeUnmount } from "vue";
 import { useTransactionTrackerStore } from "@/stores/transactionTrackerStore";
 import { useMdmTrackerStore } from "@/stores/mdmTrackerStore";
+import { useSolaceStore } from "@/stores/solaceStore";
 
+const solaceStore = useSolaceStore();
 const transactionTrackerStore = useTransactionTrackerStore();
-transactionTrackerStore.receiveTransactions();
-
 const mdmTrackerStore = useMdmTrackerStore();
-mdmTrackerStore.receiveMdmUpdates();
 
-onUnmounted(() => {
+solaceStore.connect().then(() => {
+  transactionTrackerStore.receiveTransactions();
+  mdmTrackerStore.receiveMdmUpdates();
+});
+
+onBeforeUnmount(() => {
   console.log("Closing Transaction Receiver");
-  transactionTrackerStore.disconnect();
+  // transactionTrackerStore.disconnect();
+  mdmTrackerStore.disconnect();
 });
 
 function getMostRecentTransactionFromArray(transactionArray) {
