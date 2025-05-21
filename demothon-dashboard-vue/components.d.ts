@@ -14,7 +14,6 @@ declare module 'vue' {
     RouterLink: typeof import('vue-router')['RouterLink']
     RouterView: typeof import('vue-router')['RouterView']
     StoreDetailsChart: typeof import('./src/components/StoreDetailsChart.vue')['default']
-    StoreDetailsCharts: typeof import('./src/components/StoreDetailsCharts.vue')['default']
     TransactionExplorer: typeof import('./src/components/TransactionExplorer.vue')['default']
     TransactionTracker: typeof import('./src/components/TransactionTracker.vue')['default']
   }
