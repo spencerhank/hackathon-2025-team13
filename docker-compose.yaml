@@ -1,0 +1,18 @@
+version: "3.8"
+name: sko-team13-dashboard
+services:
+  solace-ai-connector:
+    container_name: solace-ai-connector
+    image: solace-ai-connector:local
+    env_file: ./solace-ai/.env
+    volumes:
+      - ./solace-ai/getting-started/qdrant_rag.yaml:/app/config/configuration.yaml
+  sko-team13-dashboard:
+    container_name: sko-team13-dashboard
+    image: nginx:alpine
+    env_file: demothon-dashboard-vue/.env
+    ports:
+      - "8080:80"
+    volumes:
+      - ./demothon-dashboard-vue/dist:/usr/share/nginx/html
+      - ./demothon-dashboard-vue/nginx.conf:/etc/nginx/conf.d/default.conf
