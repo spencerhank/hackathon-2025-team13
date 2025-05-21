@@ -54,17 +54,17 @@ flows:
           payload_encoding: utf-8
           payload_format: json
 
-      # - component_name: stdout_output
-      #   component_module: stdout_output
-      #   input_transforms:
-      #     - type: copy
-      #       source_expression: input.topic
-      #       dest_expression: user_data.incoming_solace_topic
-      #     - type: copy
-      #       source_expression: input.payload
-      #       dest_expression: user_data.incoming_solace_payload
-      #   input_selection:
-      #     source_expression: user_data.incoming_solace_topic
+      - component_name: stdout_output
+        component_module: stdout_output
+        input_transforms:
+          - type: copy
+            source_expression: input.topic
+            dest_expression: user_data.incoming_solace_topic
+          - type: copy
+            source_expression: input.payload
+            dest_expression: user_data.incoming_solace_payload
+        input_selection:
+          source_expression: user_data.incoming_solace_topic
             # embed data and ingest into Quadrant
       - component_name: quadrant_embed
         component_module: langchain_vector_store_embedding_index
@@ -105,14 +105,14 @@ flows:
           payload_encoding: utf-8
           payload_format: json
       
-      # - component_name: stdout_output
-      #   component_module: stdout_output
-      #   input_transforms:
-      #     - type: copy
-      #       source_expression: previous
-      #       dest_expression: user_data.output:payload
-      #   input_selection:
-      #     source_expression: input   
+      - component_name: stdout_output
+        component_module: stdout_output
+        input_transforms:
+          - type: copy
+            source_expression: previous
+            dest_expression: user_data.output:payload
+        input_selection:
+          source_expression: input   
     
 
       - component_name: qrdant_search
