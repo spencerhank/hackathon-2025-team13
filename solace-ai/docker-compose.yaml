@@ -1,0 +1,8 @@
+version: "3.8"
+services:
+  solace-ai-connector:
+    container_name: solace-ai-connector
+    image: solace-ai-connector:local
+    env_file: .env
+    volumes:
+      - ./getting-started/qdrant_rag.yaml:/app/config/configuration.yaml
