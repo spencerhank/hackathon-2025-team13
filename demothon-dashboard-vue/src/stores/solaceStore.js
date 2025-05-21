@@ -142,7 +142,7 @@ export const useSolaceStore = defineStore('solaceStore', () => {
       }
 
       const replyMessageConsumer = solaceClient.session.createMessageConsumer({
-        queueDescriptor: { name: queueName, type: solace.QueueType.QUEUE, durable: false },
+        queueDescriptor: { name: queueName + '/' + solaceClient.session.getSessionProperties()['clientName'], type: solace.QueueType.QUEUE, durable: false },
         acknowledeMode: solace.MessageConsumerAcknowledgeMode.CLIENT,
         createIfMissing: true
       });
