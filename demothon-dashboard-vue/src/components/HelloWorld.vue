@@ -22,12 +22,12 @@
         <v-row>
           <v-col cols="8">
             <v-sheet min-height="70vh" rounded="lg">
-              <!-- <v-row class="pl-5">
-                <v-col cols="12">
-                  <div class="text-h2 font-weight-bold"></div>
+              <v-row class="" v-show="showDiagram">
+                <v-col col="12">
+                  <v-img src="../assets/architecture-overview.png"></v-img>
                 </v-col>
-              </v-row> -->
-              <v-row class="pl-5 pr-5">
+              </v-row>
+              <v-row class="pl-5 pr-5" v-show="!showDiagram">
                 <v-col cols="6">
                   <TransactionTracker
                     cardTitle="Total Revenue"
@@ -98,7 +98,7 @@
                   />
                 </v-col>
               </v-row>
-              <v-row>
+              <v-row v-show="!showDiagram">
                 <v-col cols="6" class="pa-5">
                   <StoreDetailsChart
                     chartId="price-update-chart"
@@ -120,7 +120,20 @@
               </v-row>
             </v-sheet>
           </v-col>
-          <v-col cols="4"> <TransactionExplorer /><AISearch /> </v-col>
+          <v-col cols="4">
+            <v-sheet>
+              <v-col cols="9" class="pl-5">
+                <v-btn
+                  :color="diagramBtnColor"
+                  @click="showDiagram = !showDiagram"
+                >
+                  {{ diagramBtnText }}
+                </v-btn></v-col
+              >
+            </v-sheet>
+
+            <TransactionExplorer /><AISearch />
+          </v-col>
         </v-row>
       </v-container>
     </v-main>
@@ -129,7 +142,7 @@
 
 <script setup>
 const links = ["Retail 360 Dashboard"];
-import { onBeforeUnmount } from "vue";
+import { ref, onBeforeUnmount } from "vue";
 import { useTransactionTrackerStore } from "@/stores/transactionTrackerStore";
 import { useMdmTrackerStore } from "@/stores/mdmTrackerStore";
 import { useSolaceStore } from "@/stores/solaceStore";
@@ -137,6 +150,24 @@ import { useSolaceStore } from "@/stores/solaceStore";
 const solaceStore = useSolaceStore();
 const transactionTrackerStore = useTransactionTrackerStore();
 const mdmTrackerStore = useMdmTrackerStore();
+
+const showDiagram = ref(true);
+
+const diagramBtnColor = computed(() => {
+  if (showDiagram.value) {
+    return "red";
+  } else {
+    return "green";
+  }
+});
+
+const diagramBtnText = computed(() => {
+  if (showDiagram.value) {
+    return "Hide Diagram";
+  } else {
+    return "Show Diagram";
+  }
+});
 
 solaceStore.connect().then(() => {
   transactionTrackerStore.receiveTransactions();
