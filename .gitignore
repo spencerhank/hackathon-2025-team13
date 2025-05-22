@@ -1,5 +1,7 @@
 **/.env
 **/.venv
 demothon-dashboard-vue/.eslintrc-auto-import.json
-solace-ai/.DS_Store
 solace-ai/solace_ai_connector.log
+# Ignore saved docker images
+*.tar
+.DS_Store
